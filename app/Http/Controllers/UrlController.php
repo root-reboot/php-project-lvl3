@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Url;
+use App\Models\UrlChecks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +18,9 @@ class UrlController extends Controller
     public function index()
     {
         $urls = Url::paginate(15);
-        return view('urls.index', compact('urls'));
+        $checks = UrlChecks::get()->keyBy('url_id');
+
+        return view('urls.index', compact('urls', 'checks'));
     }
 
     /**
@@ -56,10 +59,7 @@ class UrlController extends Controller
             $url = parse_url($request->name, PHP_URL_SCHEME) . '://' . parse_url($request->name, PHP_URL_HOST) . '/';
             $newUrl->name = $url;
             $newUrl->save();
-            
-            return redirect()
-                ->route('main')
-                ->withErrors('Ссылка успешно добавлена');
+            return redirect()->route('urls.show', $newUrl->id)->withErrors('Ссылка успешно добавлена');
         }
         return redirect()
             ->back()
@@ -72,9 +72,11 @@ class UrlController extends Controller
      * @param  \App\Models\Url  $url
      * @return \Illuminate\Http\Response
      */
-    public function show(Url $url)
+    public function show($id)
     {
-        //
+        $url = Url::findOrFail($id);
+        $checks = UrlChecks::where('url_id', $id)->get();
+        return view('urls.show', compact('url', 'checks'));
     }
 
     /**
