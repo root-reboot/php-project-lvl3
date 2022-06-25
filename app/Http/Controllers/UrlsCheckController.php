@@ -7,6 +7,7 @@ use App\Models\Url;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use DiDom\Document;
 use DiDom\Query;
 
@@ -38,11 +39,10 @@ class UrlsCheckController extends Controller
         $check = new UrlChecks();
         $check->url_id = $id;
         $check->status_code = $response->status();
-        $check->title = $title;
-        $check->description = $description;
-        $check->h1 = $h1;
+        $check->title = Str::limit($title, 30);
+        $check->description = Str::limit($description, 30);
+        $check->h1 = Str::limit($h1, 10);
         $check->created_at = Carbon::now();
-        dd($check->h1);
         $check->save();
         return redirect()
             ->back()
